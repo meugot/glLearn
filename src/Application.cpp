@@ -146,10 +146,16 @@ int main() {
 
 	// ====================================================================================//
 	// Vertices in 3d space
-	float triangle_vertices[] = {
-		-0.5f, -0.5f, 0.0f,
-		0.0f, 0.5f, 0.0f,
-		0.5f, -0.5f, 0.0f
+	float vertices[] = {
+		 0.5f,  0.5f, 0.0f,  // top right
+		 0.5f, -0.5f, 0.0f,  // bottom right
+		-0.5f, -0.5f, 0.0f,  // bottom left
+		-0.5f,  0.5f, 0.0f
+	};
+
+	unsigned int indices[] = {  // note that we start from 0!
+		0, 1, 3,  // first Triangle
+		1, 2, 3   // second Triangle
 	};
 
 	// ============================================================================================= //
@@ -204,19 +210,23 @@ int main() {
 	//glBindVertexArray(VAO);
 	//glBindVertexArray(0);
 	
-	unsigned int VBO, VAO;
-	glGenVertexArrays(1, &VAO); // Generates vertex array object
+	unsigned int VBO, VAO, EBO;
+	glGenVertexArrays(1, &VAO);// Generates vertex array object
 	glGenBuffers(1, &VBO);// Provides a specific id for created buffer.
 	//// first parameter = number of buffers to create
 	//// unique id assigned to VBO
+
+	glGenBuffers(1, &EBO);
 	
 	glBindVertexArray(VAO);// bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);// Bounds the created buffer object (that have specific id) with the target type object (GL_ARRAY_BUFFER (vertex array buffer))
 	//// OpenGL allows us to bind several buffer types at once as long as they have a different buffer type.
 	//// From this point any buffer call we make, it will be used to configure currently bound buffer which is VBO.
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 
-	glBufferData(GL_ARRAY_BUFFER, sizeof(triangle_vertices), triangle_vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 	//// Function used to copy user defined data into the currently bound buffer.
 	//// first parameter = type of buffer of we want to copy data into
 	//// second parameter = size of data(in bytes)
@@ -235,7 +245,8 @@ int main() {
 	//// fifth Parameter: it is known as stride and tells us the space between consecutive vertex attributes. As the next set of position data is 3*sizeof(float) away in the memory. So we write 3*sizeof(float). We could've set this to 0 and let the OpenGL determine the stride.(This only works when values are tightly packed or in a array.). We have to carefully determine the spacing between vertex attribute
 	//// sixth parameter: this is the offset of where the position data begins in buffer. Since the position data is at the start of array this value is just 0. We will explore it later on.
 	
-	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(0); //Enables to draw the image
+	//first argument: from which VAO index to start
 
 	// note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
 	glBindBuffer(GL_ARRAY_BUFFER, 0);// Bounds the created buffer object (that have specific id) with the target type object (GL_ARRAY_BUFFER (vertex array buffer))
@@ -246,6 +257,8 @@ int main() {
 	// VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
 	glBindVertexArray(0);
 
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	while (!glfwWindowShouldClose(main_window)) {
 
@@ -259,7 +272,10 @@ int main() {
 
 		glUseProgram(shaderProgram);
 		glBindVertexArray(VAO);
-		glDrawArrays(GL_TRIANGLES, 0, 3); // first parameter = OpenGL primitive type
+		//glDrawArrays(GL_TRIANGLES, 0, 3); // first parameter = OpenGL primitive type
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); // draws object from indices provided
+
+
 		// second parameter = starting index of vertex array we'd like to draw
 		// third parameter = number of vertices we want to draw
 
@@ -268,8 +284,7 @@ int main() {
 		// will swap the color buffer that is used to render to during this render iteration and show it as the output to the screen.
 		// Search for Double Buffer for more information.
 
-		glfwPollEvents(); // checking for key events.
-
+		glfwPollEvents(); // checking for key events or mouse movements.
 	}
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
