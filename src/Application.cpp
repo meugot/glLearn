@@ -203,8 +203,7 @@ int main() {
 	//glGenVertexArrays(1, &VAO); // Generates vertex array object
 	//glBindVertexArray(VAO);
 	//glBindVertexArray(0);
-	//
-
+	
 	unsigned int VBO, VAO;
 	glGenVertexArrays(1, &VAO); // Generates vertex array object
 	glGenBuffers(1, &VBO);// Provides a specific id for created buffer.
