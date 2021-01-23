@@ -259,6 +259,7 @@ int main() {
 
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
 
 	while (!glfwWindowShouldClose(main_window)) {
 
