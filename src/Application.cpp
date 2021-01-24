@@ -20,16 +20,19 @@ int main() {
 	// Creating Vertex Shader
 	const char* vertexShaderCode = "#version 420 core\n"
 		"layout (location = 0) in vec3 aPos;\n"
+		"layout (location = 1) in vec3 aColor;\n"
+		"out vec3 ourColor;\n"
 		"void main(){\n"
 		"	gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+		"	ourColor = aColor;\n"
 		"}\0";
 
 	// Creating Fragment Shader
 	const char* fragmentShaderCode = "#version 420 core\n"
 		"out vec4 FragColor;\n"
-		"uniform vec4 ourColor;\n"
+		"in vec3 ourColor;\n"
 		"void main(){\n"
-		"	FragColor = ourColor;\n"
+		"	FragColor = vec4(ourColor, 1.0);\n"
 		"}\0";
 
 
@@ -148,10 +151,11 @@ int main() {
 	// ====================================================================================//
 	// Vertices in 3d space
 	float vertices[] = {
-		 0.5f,  0.5f, 0.0f,  // top right
-		 0.5f, -0.5f, 0.0f,  // bottom right
-		-0.5f, -0.5f, 0.0f,  // bottom left
-		-0.5f,  0.5f, 0.0f
+		// postions           //colors
+		 0.5f,  0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
+		 0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f,
+		-0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f,
+		-0.5f,  0.5f, 0.0f, 1.0f, 0.0f , 1.0f
 	};
 
 	unsigned int indices[] = {  // note that we start from 0!
@@ -237,7 +241,8 @@ int main() {
 	//	// GL_STATIC_DRAW: data is set only once and used by GPU many times.
 	//	// GL_DYNAMIC_DRAW: data is changed a lot of times and is used by GPU many times.
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3*sizeof(float)));
 	////This function specifies how OpenGL should interpret this data whenever a drawing call is made.
 	////first Parameter: specifies which vertex attribute we want to configure. REMEMBER ? we specified the location of position vertex attribute in the vertex shader with "layout (location=0)". This sets the location of the vertex attribute to 0 and since we want to pass data to this location we set it as 0
 	//// second Parameter: specifies the size of vertex attribute. Vertex attribute is a vec3 so we put 3.
@@ -247,6 +252,7 @@ int main() {
 	//// sixth parameter: this is the offset of where the position data begins in buffer. Since the position data is at the start of array this value is just 0. We will explore it later on.
 	
 	glEnableVertexAttribArray(0); //Enables to draw the image
+	glEnableVertexAttribArray(1);
 	//first argument: from which VAO index to start
 
 	// note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
