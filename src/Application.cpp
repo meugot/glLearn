@@ -27,8 +27,9 @@ int main() {
 	// Creating Fragment Shader
 	const char* fragmentShaderCode = "#version 420 core\n"
 		"out vec4 FragColor;\n"
+		"uniform vec4 ourColor;\n"
 		"void main(){\n"
-		"	FragColor = vec4(1.0f, 1.0f, 1.0f, 1.0f);\n"
+		"	FragColor = ourColor;\n"
 		"}\0";
 
 
@@ -272,6 +273,11 @@ int main() {
 
 
 		glUseProgram(shaderProgram);
+		float timeValue = glfwGetTime();
+		float greenColorValue = sin(timeValue)/2.0f + 0.5f;
+		int vertexUniformLocation = glGetUniformLocation(shaderProgram, "ourColor");
+		glUniform4f(vertexUniformLocation, 0.0f, greenColorValue, 0.0f, 1.0f);
+
 		glBindVertexArray(VAO);
 		//glDrawArrays(GL_TRIANGLES, 0, 3); // first parameter = OpenGL primitive type
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); // draws object from indices provided
