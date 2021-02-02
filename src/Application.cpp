@@ -203,6 +203,10 @@ int main() {
 
 
 		ourShader.use();
+		float time = glfwGetTime();
+		float offSetValue = sin(time) / 2.0f + 0.5f;
+		
+		ourShader.setFloat("xOffset", offSetValue);
 
 		glBindVertexArray(VAO);
 		//glDrawArrays(GL_TRIANGLES, 0, 3); // first parameter = OpenGL primitive type
