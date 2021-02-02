@@ -1,6 +1,6 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-
+#include "Shader.h"
 #include <iostream>
 
 // Creating Callback for windows resize
@@ -70,84 +70,8 @@ int main() {
 
 	//// =============================================================================================== //
 
-	// Compiling vertex Shader code written above
-	unsigned int vertexShader; // Shader Object referenced by an id thats' why unsigned int
-	vertexShader = glCreateShader(GL_VERTEX_SHADER); // we provide the type of shader as an argument to glCreateShader. It will create a shader of provided type and assign a specific id to object.
-
-	glShaderSource(vertexShader, 1, &vertexShaderCode, NULL);
-	// Attach shader source code to shader object
-	// first argument = shader object to compile
-	// second argument = how many strings we are passing as source code
-	// third argument = actual shader source code of the vertex
-	// fourth argument = array of string lengths, if null then strings have to be null terminated.
-
-	glCompileShader(vertexShader); // Compiles the vertex Shader
-
-	// Checking for compiler errors
-	int success;
-	char infoLog[512]; // storage container for error messages
-	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-	// allows the developer to query a shader for information given as object parameter.
-	// first argument = specifies the shader object to be queried.
-	// second argument = specifies object parameter
-	// third argument = returns the requested object parameter in the given GLint array.
-
-	if (!success) {
-		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-		// returns the information log for the requested object
-		// first argument = shader object whose information log is queried.
-		// second argument = size of character buffer for storing returned information log.
-		// third argument = returns the length of string returned in info log.
-		// fourth argument = array of characters that is used to return the information log.
-
-		std::cout << "Error Shader Vertex Compilation Failed" << infoLog << std::endl;
-	}
-	// ============================================================================================//
-
-	//Compiling Fragement Shader code written above
-	unsigned int fragmentShader;
-	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShader, 1, &fragmentShaderCode, NULL);
-	glCompileShader(fragmentShader);
-
-	// Checking for compiling errors
-	int fragSuccess;
-	char fragInfoLog[512];
-	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &fragSuccess);
-
-	if (!fragSuccess) {
-		glGetShaderInfoLog(fragmentShader, 512, NULL, fragInfoLog);
-		std::cout << "Error Shader Fragment Compilation Failed" << fragInfoLog << std::endl;
-	}
-	//====================================================================================================//
-
-	//Creating Shader Program object to link all compiled shaders and render them in a scene.
-	unsigned int shaderProgram;
-	shaderProgram = glCreateProgram(); // It creates program and returns id reference to the newly created program object. returns 0 if error occured.
-
-	glAttachShader(shaderProgram, vertexShader); // Attaches the shader to program
-	glAttachShader(shaderProgram, fragmentShader);
-	glLinkProgram(shaderProgram); // Links all the attached shaders with program
-	// During linking ouput of one should match with input of other shader. If anything goes wrong linking fails.
-
-	// Checking for linking errors
-	int linkingSuccess;
-	char linkingInfoLog[512];
-	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &linkingSuccess);
-	if (!linkingSuccess) {
-		glGetProgramInfoLog(shaderProgram, 512, NULL, linkingInfoLog);
-		std::cout << "Error Program Linking Failed" <<linkingInfoLog << std::endl;
-	}
-
-	// Using Shader object
-	//glUseProgram(shaderProgram); // This function sets the given program object as the current shader program to use for subsequent drawing commands.
-
-	glDeleteShader(vertexShader);
-	glDeleteShader(fragmentShader);
-
-	// Till now we have sent the vertex input data to the GPU and instructed GPU how it should process the vertex data within a vertex and fragment shader.
-	// OpenGL yet doesn't know how it should interpret the vertex data in memory and how it should connect vertex data to vertex shader's attribute
-
+	Shader ourShader("shader.vert", "shader.frag");
+	
 	// ====================================================================================//
 	// Vertices in 3d space
 	float vertices[] = {
@@ -278,11 +202,7 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT); //to clear the color buffer.
 
 
-		glUseProgram(shaderProgram);
-		float timeValue = glfwGetTime();
-		float greenColorValue = sin(timeValue)/2.0f + 0.5f;
-		int vertexUniformLocation = glGetUniformLocation(shaderProgram, "ourColor");
-		glUniform4f(vertexUniformLocation, 0.0f, greenColorValue, 0.0f, 1.0f);
+		ourShader.use();
 
 		glBindVertexArray(VAO);
 		//glDrawArrays(GL_TRIANGLES, 0, 3); // first parameter = OpenGL primitive type
@@ -301,7 +221,7 @@ int main() {
 	}
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
-	glDeleteProgram(shaderProgram);
+	
 
 	glfwTerminate();
 	return 0;
