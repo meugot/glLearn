@@ -2,6 +2,10 @@
 out vec4 FragColor;
 in vec3 ourColor;
 in vec3 vertexPos;
+in vec2 textCoord;
+uniform sampler2D ourTexture;
+uniform sampler2D ourTexture2;
 void main(){
-    FragColor = vec4(vertexPos, 1.0);
+    FragColor = mix(texture(ourTexture, textCoord), texture(ourTexture2, textCoord), 0.2) * vec4(ourColor, 1.0);
+    // if the third argument of mix() is 0 then it will show first texture, and if 1.0 then it will show second texture.
 }

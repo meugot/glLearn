@@ -1,7 +1,10 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include "Shader.h"
 #include <iostream>
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+
+#include "../Shader.h"
 
 // Creating Callback for windows resize
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
@@ -16,26 +19,6 @@ void processInput(GLFWwindow* window) {
 }
 
 int main() {
-
-	// Creating Vertex Shader
-	const char* vertexShaderCode = "#version 420 core\n"
-		"layout (location = 0) in vec3 aPos;\n"
-		"layout (location = 1) in vec3 aColor;\n"
-		"out vec3 ourColor;\n"
-		"void main(){\n"
-		"	gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-		"	ourColor = aColor;\n"
-		"}\0";
-
-	// Creating Fragment Shader
-	const char* fragmentShaderCode = "#version 420 core\n"
-		"out vec4 FragColor;\n"
-		"in vec3 ourColor;\n"
-		"void main(){\n"
-		"	FragColor = vec4(ourColor, 1.0);\n"
-		"}\0";
-
-
 	// Initialising glfw and creating window context
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -72,14 +55,81 @@ int main() {
 
 	Shader ourShader("shader.vert", "shader.frag");
 	
+// Generating and Loading Textures --------------------------------------------------------
+	
+	unsigned int texture;
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	// sets the given texture as currently bound texture. Any subsequent texture operations will affect the currently bound texture object.
+
+	//glTexParameteri sets texture parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // repeat tex on s axis
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT); // repeat tex on t axis
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // linear filter when downsclaling(minifying) image.
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // linear filter when upscaling(magnifying) image.
+
+	stbi_set_flip_vertically_on_load(true);
+	// it is a flag so we have to set it once and it will be set for whole program and should be used before loading image!.
+	// Image is flipped on load because opengl expects y axis 0 to be on bottom. but usually we take it on top so we have to flip image.
+
+
+	// Opening stbi_image-----------------------------------------------------------
+	int width, height, nrChannels;
+	unsigned char* data = stbi_load("Textures/container.jpg", &width, &height, &nrChannels, 0);
+	// first argument takes in location of texture file.
+	// second argument provides width
+	// third argument provides height
+	// The last argument of the function is useful if for example you want to load only the R, G, B channels from a four channel, PNG, image and ignore the transparency channel. If you want to load the image as is, pass 0 as the last parameter of the load function.
+
+	if (data) {
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+	// This function generates the texture image for currently bound texture object
+	// first argument - specifies the texture target; setting it to GL_TEXTURE_2D will generate a texture on currently bound texture object at the same target(so any textures bound to GL_TEXTURE_1D or any other target will not be affected).
+	// second argument - specifies mipmap level for which we want to create a texture for if you want to set each mipmap level manually, but we'll leave it at base level 0.
+	// third argument - third argument tells in what format we want to store the texture. Our image as rgb value so we'll store it as GL_RGB.
+	// fourth argument and fifth argument - sets the width and height for resulting texture. We stored this earlier.
+	// sixth argument - should always be zero(some legacy stuff).
+	// seventh argument and eighth argument - specifies the format and datatype of the source image. We loaded the image with rgb format and stored it chars(bytes).
+	// ninth argument - actual image data.
+	glGenerateMipmap(GL_TEXTURE_2D);
+	// creates all the required mipmaps. If we want to use those mipmaps we have to manually apply mipmaps by incrementing the second argument of glTexImage2D function.
+	}
+
+	else {
+		std::cout << "Failed to load image data" << std::endl;
+	}
+
+
+	stbi_image_free(data);
+	// as we have used image to generate textures and mipmaps. IT's a good practice to free image memory.
+
+	// Creating second texture
+	unsigned int texture2;
+	glGenTextures(1, &texture2);
+	glBindTexture(GL_TEXTURE_2D, texture2);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	data = stbi_load("Textures/awesomeface.png", &width, &height, &nrChannels, 0);
+	if (data) {
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else {
+		std::cout << "Failed to load texture image" << std::endl;
+	}
+	stbi_image_free(data);
+
 	// ====================================================================================//
 	// Vertices in 3d space
 	float vertices[] = {
-		// postions           //colors
-		 0.5f,  0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
-		 0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f,
-		-0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f,
-		-0.5f,  0.5f, 0.0f, 1.0f, 0.0f , 1.0f
+		// postions              //colors          //textures
+		 0.5f,  0.5f, 0.0f,		1.0f, 0.0f, 0.0f,	1.0f, 1.0f,
+		 0.5f, -0.5f, 0.0f,		0.0f, 1.0f, 0.0f,	1.0f, 0.0f,
+		-0.5f, -0.5f, 0.0f,		0.0f, 0.0f, 1.0f,	0.0f, 0.0f,
+		-0.5f,  0.5f, 0.0f,		1.0f, 0.0f, 1.0f,	0.0f, 1.0f
 	};
 
 	unsigned int indices[] = {  // note that we start from 0!
@@ -165,8 +215,9 @@ int main() {
 	//	// GL_STATIC_DRAW: data is set only once and used by GPU many times.
 	//	// GL_DYNAMIC_DRAW: data is changed a lot of times and is used by GPU many times.
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3*sizeof(float)));
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3*sizeof(float)));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6*sizeof(float)));
 	////This function specifies how OpenGL should interpret this data whenever a drawing call is made.
 	////first Parameter: specifies which vertex attribute we want to configure. REMEMBER ? we specified the location of position vertex attribute in the vertex shader with "layout (location=0)". This sets the location of the vertex attribute to 0 and since we want to pass data to this location we set it as 0
 	//// second Parameter: specifies the size of vertex attribute. Vertex attribute is a vec3 so we put 3.
@@ -177,6 +228,7 @@ int main() {
 	
 	glEnableVertexAttribArray(0); //Enables to draw the image
 	glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(2);
 	//first argument: from which VAO index to start
 
 	// note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
@@ -189,9 +241,14 @@ int main() {
 	glBindVertexArray(0);
 
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
 
+	ourShader.use();// don't forget to activate / use the shader before setting uniforms.
+	ourShader.setInt("ourTexture", 0);
+	ourShader.setInt("ourTexture2", 1);
+
+	
 	while (!glfwWindowShouldClose(main_window)) {
 
 		// Check for input--------------------------------------------------------------------------
@@ -201,12 +258,17 @@ int main() {
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f); // Clear the screen using this color.
 		glClear(GL_COLOR_BUFFER_BIT); //to clear the color buffer.
 
+		// bind textures on corresponding texture units.
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, texture2);
 
 		ourShader.use();
-		float time = glfwGetTime();
-		float offSetValue = sin(time) / 2.0f + 0.5f;
-		
-		ourShader.setFloat("xOffset", offSetValue);
+	//	float time = glfwGetTime();
+	//	float offSetValue = sin(time) / 2.0f + 0.5f;
+	//	
+	//	ourShader.setFloat("xOffset", offSetValue);
 
 		glBindVertexArray(VAO);
 		//glDrawArrays(GL_TRIANGLES, 0, 3); // first parameter = OpenGL primitive type
