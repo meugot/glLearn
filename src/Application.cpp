@@ -1,10 +1,14 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include "../Shader.h"
+
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
 
 // Creating Callback for windows resize
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
@@ -265,12 +269,14 @@ int main() {
 		glBindTexture(GL_TEXTURE_2D, texture2);
 
 		ourShader.use();
-	//	float time = glfwGetTime();
-	//	float offSetValue = sin(time) / 2.0f + 0.5f;
-	//	
-	//	ourShader.setFloat("xOffset", offSetValue);
-
 		glBindVertexArray(VAO);
+		
+		glm::mat4 transMat = glm::mat4(1.0f);
+		transMat = glm::translate(transMat, glm::vec3(0.5f, 0.5f, -0.4f));
+		transMat = glm::rotate(transMat, (float)glfwGetTime(), glm::vec3(1.0f, 0.5f, 0.0f));
+//		glUniformMatrix4fv(glGetUniformLocation(ourShader.ID, "transMat"), 1, GL_FALSE, glm::value_ptr(transMat));
+		ourShader.setMat4("transMat", transMat);
+		
 		//glDrawArrays(GL_TRIANGLES, 0, 3); // first parameter = OpenGL primitive type
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); // draws object from indices provided
 
