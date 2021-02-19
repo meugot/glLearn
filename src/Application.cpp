@@ -275,8 +275,14 @@ int main() {
 		transMat = glm::translate(transMat, glm::vec3(0.5f, 0.5f, -0.4f));
 		transMat = glm::rotate(transMat, (float)glfwGetTime(), glm::vec3(1.0f, 0.5f, 0.0f));
 //		glUniformMatrix4fv(glGetUniformLocation(ourShader.ID, "transMat"), 1, GL_FALSE, glm::value_ptr(transMat));
-		ourShader.setMat4("transMat", transMat);
-		
+		glm::mat4 view = glm::mat4(1.0f);
+		view = glm::translate(view, glm::vec3(0.0f, 0.0f, -2.0f));
+
+		glm::mat4 projection = glm::mat4(1.0f);
+		projection = glm::perspective((45.0f), (float)800 / 600, 0.1f, 100.0f);
+		ourShader.setMat4("model", transMat);
+		ourShader.setMat4("view", view);
+		ourShader.setMat4("projection", projection);
 		//glDrawArrays(GL_TRIANGLES, 0, 3); // first parameter = OpenGL primitive type
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); // draws object from indices provided
 

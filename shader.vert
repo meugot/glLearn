@@ -6,9 +6,11 @@ layout(location = 2) in vec2 atextCoord;
 out vec3 ourColor;
 out vec3 vertexPos;
 out vec2 textCoord;
-uniform mat4 transMat;
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
 void main(){
-    gl_Position = transMat * vec4(aPos, 1.0);
+    gl_Position = projection * view * model * vec4(aPos, 1.0);
     vertexPos = aPos;
     ourColor = aColor;
     textCoord = atextCoord;
