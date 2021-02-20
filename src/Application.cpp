@@ -132,14 +132,18 @@ int main() {
 	// Vertices in 3d space
 	float vertices[] = {
 		// postions         //textures
-		-0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
-		0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
-		0.5f, 0.5f, -0.5f, 0.0f, 0.0f, 1.0f,
-		-0.5f, 0.5f, -0.5f, 0.5f, 0.5f, 0.0f,
-		-0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 0.0f,
-		0.5f, -0.5f, 0.5f, 0.0f, 1.0f, 0.0f,
-		0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f,
-		-0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.0f
+		-0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
+		0.5f, -0.5f, -0.5f, 1.0f, 0.0f,
+		0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+		-0.5f, 0.5f, -0.5f,	0.0f, 1.0f,
+		-0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+		0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+		0.5f, 0.5f, 0.5f, 0.0f, 1.0f,
+		-0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
+		0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+		-0.5f, 0.5f, 0.5f, 0.0f, 0.0f,
+		0.5f, -0.5f, 0.5f, 1.0f, 1.0f,
+		-0.5f, -0.5f, 0.5f, 0.0f, 1.0f
 	};
 
 
@@ -157,11 +161,19 @@ int main() {
 		6, 2, 1,
 		1, 5, 6,
 		// fifth face
-		7, 3, 2,
-		6, 7, 2,
+		9, 3, 2,
+		8, 9, 2,
 		//sixth face
-		4, 0, 1,
-		5, 4, 1
+		11, 0, 1,
+		10, 11, 1
+	};
+
+	glm::vec3 cubePos[]{
+		glm::vec3(0.3f, 0.1f, -0.5f),
+		glm::vec3(-0.5f, 0.3f, -1.0f),
+		glm::vec3(-0.6f, 0.2f, -0.3f),
+		glm::vec3(2.0f, 3.0f, 6.0f),
+		glm::vec3(2.3f, 3.2f, 4.0f)
 	};
 
 	// ============================================================================================= //
@@ -242,9 +254,9 @@ int main() {
 	//	// GL_STATIC_DRAW: data is set only once and used by GPU many times.
 	//	// GL_DYNAMIC_DRAW: data is changed a lot of times and is used by GPU many times.
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3*sizeof(float)));
-	//glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3*sizeof(float)));
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	//glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3*sizeof(float)));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3*sizeof(float)));
 	////This function specifies how OpenGL should interpret this data whenever a drawing call is made.
 	////first Parameter: specifies which vertex attribute we want to configure. REMEMBER ? we specified the location of position vertex attribute in the vertex shader with "layout (location=0)". This sets the location of the vertex attribute to 0 and since we want to pass data to this location we set it as 0
 	//// second Parameter: specifies the size of vertex attribute. Vertex attribute is a vec3 so we put 3.
@@ -254,8 +266,8 @@ int main() {
 	//// sixth parameter: this is the offset of where the position data begins in buffer. Since the position data is at the start of array this value is just 0. We will explore it later on.
 	
 	glEnableVertexAttribArray(0); //Enables to draw the image
-	glEnableVertexAttribArray(1);
-	//glEnableVertexAttribArray(2);
+	//glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(2);
 	//first argument: from which VAO index to start
 
 	// note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
@@ -295,8 +307,8 @@ int main() {
 		glBindVertexArray(VAO);
 		
 		glm::mat4 transMat = glm::mat4(1.0f);
-		transMat = glm::translate(transMat, glm::vec3(0.5f, 0.5f, -0.4f));
-		transMat = glm::rotate(transMat, (float)glfwGetTime(), glm::vec3(1.0f, 0.5f, 0.0f));
+		transMat = glm::translate(transMat, glm::vec3(0.0f, 0.0f, -0.4f));
+		transMat = glm::rotate(transMat, (float)glfwGetTime(), glm::vec3(1.0f, 0.5f,-0.2f));
 //		glUniformMatrix4fv(glGetUniformLocation(ourShader.ID, "transMat"), 1, GL_FALSE, glm::value_ptr(transMat));
 		glm::mat4 view = glm::mat4(1.0f);
 		view = glm::translate(view, glm::vec3(0.0f, 0.0f, -2.0f));
