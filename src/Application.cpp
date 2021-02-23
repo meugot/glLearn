@@ -10,6 +10,9 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
+glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 5.0f);
+glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 upDir = glm::vec3(0.0f, 1.0f, 0.0f);
 // Creating Callback for windows resize
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
@@ -17,8 +20,25 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 
 // To check for inputs given by user
 void processInput(GLFWwindow* window) {
+	float cameraspeed = 0.005f;
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 		glfwSetWindowShouldClose(window, true);
+	}
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+		cameraPos += cameraspeed * glm::normalize(cameraTarget - cameraPos);
+		cameraTarget += cameraspeed * glm::normalize(cameraTarget - cameraPos);
+	}
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+		cameraPos -= cameraspeed * (glm::normalize(cameraTarget - cameraPos));
+		cameraTarget -= cameraspeed * (glm::normalize(cameraTarget - cameraPos));
+	}
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+		cameraPos -= cameraspeed * (glm::normalize(glm::cross(cameraTarget-cameraPos, upDir)));
+		cameraTarget -= cameraspeed * (glm::normalize(glm::cross(cameraTarget-cameraPos, upDir)));
+	}
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+		cameraPos += cameraspeed * (glm::normalize(glm::cross(cameraTarget - cameraPos, upDir)));
+		cameraTarget += cameraspeed * (glm::normalize(glm::cross(cameraTarget - cameraPos, upDir)));
 	}
 }
 
@@ -170,10 +190,10 @@ int main() {
 
 	glm::vec3 cubePos[]{
 		glm::vec3(0.3f, 0.1f, -0.5f),
-		glm::vec3(-0.5f, 0.3f, -1.0f),
-		glm::vec3(-0.6f, 0.2f, -0.3f),
-		glm::vec3(2.0f, 3.0f, 6.0f),
-		glm::vec3(2.3f, 3.2f, 4.0f)
+		glm::vec3(-1.5f, 1.3f, -1.0f),
+		glm::vec3(-0.8f, 0.8f, -2.5f),
+		glm::vec3(1.0f, 2.0f, -3.0f),
+		glm::vec3(1.3f, 1.2f, -4.0f)
 	};
 
 	// ============================================================================================= //
@@ -305,26 +325,31 @@ int main() {
 
 		ourShader.use();
 		glBindVertexArray(VAO);
-		
-		glm::mat4 transMat = glm::mat4(1.0f);
-		transMat = glm::translate(transMat, glm::vec3(0.0f, 0.0f, -0.4f));
-		transMat = glm::rotate(transMat, (float)glfwGetTime(), glm::vec3(1.0f, 0.5f,-0.2f));
-//		glUniformMatrix4fv(glGetUniformLocation(ourShader.ID, "transMat"), 1, GL_FALSE, glm::value_ptr(transMat));
 		glm::mat4 view = glm::mat4(1.0f);
-		view = glm::translate(view, glm::vec3(0.0f, 0.0f, -2.0f));
 
+		view = glm::lookAt(cameraPos, cameraTarget, upDir);
+		//view = glm::translate(view, glm::vec3(4.0f, 0.0f, -4.0f));
+		//view = glm::rotate(view, (float)glm::radians(glfwGetTime()), glm::vec3(0.0f, 0.0f, 1.0f));
 		glm::mat4 projection = glm::mat4(1.0f);
-		projection = glm::perspective(glm::radians(55.0f), (float)800 / 600, 0.1f, 100.0f);
-		ourShader.setMat4("model", transMat);
+		projection = glm::perspective(glm::radians(55.0f), (float)800 / 600, 0.1f, 1000.0f);
 		ourShader.setMat4("view", view);
 		ourShader.setMat4("projection", projection);
-		//glDrawArrays(GL_TRIANGLES, 0, 3); // first parameter = OpenGL primitive type
-		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // draws object from indices provided
 
-
-		// second parameter = starting index of vertex array we'd like to draw
-		// third parameter = number of vertices we want to draw
-
+		for (size_t i = 0; i < 5; i++) {
+			glm::mat4 transMat = glm::mat4(1.0f);
+			//transMat = glm::translate(transMat, glm::vec3(0.0f, 0.0f, -0.4f));
+			transMat = glm::translate(transMat, cubePos[i]);
+			float angle = i * 10;
+			transMat = glm::rotate(transMat, (float)(angle+glfwGetTime()), glm::vec3(0.3f, 0.2f, 0.3f));
+//			glUniformMatrix4fv(glGetUniformLocation(ourShader.ID, "transMat"), 1, GL_FALSE, glm::value_ptr(transMat));
+	
+			ourShader.setMat4("model", transMat);
+		
+			//glDrawArrays(GL_TRIANGLES, 0, 3); // first parameter = OpenGL primitive type
+			glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // draws object from indices provided
+			// second parameter = starting index of vertex array we'd like to draw
+			// third parameter = number of vertices we want to draw
+		}
 		// check and call events and swap buffers here ---------------------------------------------
 		glfwSwapBuffers(main_window);
 		// will swap the color buffer that is used to render to during this render iteration and show it as the output to the screen.
@@ -334,7 +359,6 @@ int main() {
 	}
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
-	
 
 	glfwTerminate();
 	return 0;
